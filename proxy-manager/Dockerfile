@@ -1,6 +1,9 @@
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:12.2.7
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:13.2.2
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+
+# Required for webpack config of NPM
+ENV NODE_OPTIONS="--openssl-legacy-provider"
 
 # Set shell
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -9,39 +12,38 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 COPY requirements.txt /tmp/
 
 # Setup base
-# hadolint ignore=DL3003
+ARG NGINX_PROXY_MANAGER_VERSION="v2.10.2"
+# hadolint ignore=DL3003,DL3042
 RUN \
     apk add --no-cache --virtual .build-dependencies \
         build-base=0.5-r3 \
-        git=2.36.4-r0 \
-        libffi-dev=3.4.2-r1 \
-        npm=8.10.0-r0 \
-        openssl-dev=1.1.1s-r0 \
-        patch=2.7.6-r7 \
-        python3-dev=3.10.9-r0 \
+        git=2.38.5-r0 \
+        libffi-dev=3.4.4-r0 \
+        npm=9.1.2-r0 \
+        openssl-dev=3.0.8-r4 \
+        patch=2.7.6-r9 \
+        python3-dev=3.10.11-r0 \
         yarn=1.22.19-r0 \
     \
     && apk add --no-cache \
-        apache2-utils=2.4.55-r0 \
-        certbot=1.27.0-r0 \
-        libcap=2.64-r0 \
-        logrotate=3.19.0-r3 \
-        mariadb-client=10.6.10-r0 \
+        apache2-utils=2.4.57-r0 \
+        certbot=1.32.0-r0 \
+        libcap=2.66-r0 \
+        logrotate=3.20.1-r3 \
+        mariadb-client=10.6.12-r0 \
         nginx-mod-stream=1.22.1-r0 \
         nginx=1.22.1-r0 \
-        nodejs=16.17.1-r0 \
-        openssl=1.1.1s-r0 \
-        py3-pip=22.1.1-r0 \
-        python3=3.10.9-r0 \
+        nodejs=18.14.2-r0 \
+        openssl=3.0.8-r4 \
+        py3-pip=22.3.1-r1 \
+        python3=3.10.11-r0 \
     \
-    && ln -s /usr/bin/python3 /usr/bin/python \
-    \
-    && pip3 install --no-cache-dir -r /tmp/requirements.txt \
+    && pip3 install -r /tmp/requirements.txt \
     \
     && yarn global add modclean \
     \
     && curl -J -L -o /tmp/nginxproxymanager.tar.gz \
-        "https://github.com/jc21/nginx-proxy-manager/archive/v2.9.19.tar.gz" \
+        "https://github.com/NginxProxyManager/nginx-proxy-manager/archive/${NGINX_PROXY_MANAGER_VERSION}.tar.gz" \
     && mkdir /app \
     && tar zxvf \
         /tmp/nginxproxymanager.tar.gz \
